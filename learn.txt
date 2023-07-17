@@ -75,7 +75,11 @@ sy-cgsms：全专系统服务端代码，前后端分离，仅包含后端代码
   
   ```
 
-  例如controller中这一步，通过@RequestBody将post请求的数据转换为GuideVO对象，然后在controller中再将GuideVO保存为Guide对象并存储
+  例如controller中这一步，通过@RequestBody将post请求的数据转换为GuideVO对象，然后在controller中再将GuideVO保存为Guide对象并存储。
+  
+  因为前端发送到后端的请求（例如查询请求）并不一定包含entity中所有熟悉，因此转成的对象可能与dao中的对象不同，因此我们需要有VO类面向我们的UI界面；
+  
+  相同的，我们的controller或server中也不需要完整的dao中的entity对象，则中间的DTO类就来作为这个类
 
 ## spring boot
 
@@ -163,7 +167,35 @@ cgsms-patient相应的也需要在bootstrap.yml配置nacos地址，将服务注�
 - 各种应用服务注册到nacos上，nacos上通过配置管理中的配置文件将服务集成
 - 应用服务在nacos上配置对应数据库、redis、数据工厂
 
-例如本地启动网关和患者服务，并配置到nacos上，并在D:\sy-cgsms\system-ui\.env.development中配置接口地址为http://localhost:6166/sys-auth，...（补充前端应用于后端关系），请求发送到本地网关，本地网关根据nacos上配置，检索nacos上的患者服务并轮询发送请求，请求又被发送到我们本地的患者服务。
+例如本地启动网关和患者服务，并配置到nacos上，并在D:\sy-cgsms\system-ui\.env.development中配置接口地址为http://localhost:6166/sys-auth，sys-auth对应nacos配置文件中
+
+```
+          uri: lb://cgsms-patient
+          predicates:
+            - Path=/sys-auth/*
+```
+
+`predicates`定义了一个断言条件，即只有请求的路径以`/sys-auth/`开头的请求会被匹配到。当匹配到该条件的请求时，`uri`指定的目标服务是`http://cgsms-patient`，Gateway会将请求转发到该URL。
+
+因此将请求发送到本地网关，本地网关根据nacos上配置，检索nacos上的cgsms-patient患者服务并轮询发送请求，请求又被发送到我们本地的患者服务。
+
+## 前后端分离
+
+前端写完了各种页面以及页面之间的跳转，前端向后端（向网关，网关再分发请求到服务上）发送http请求，后端通过servlet分发请求并进行计算、访问数据等操作返回结果，前端得到结果后渲染到前端；
+
+- url对前端和后端
+
+  对于前端：
+
+  1. 导航和页面跳转：前端应用程序使用URL来定义页面之间的跳转逻辑。用户点击链接或在浏览器中输入URL时，前端应用程序会根据URL来导航到相应的页面或执行相应的操作。
+  2. 路由和页面渲染：前端框架（如Vue.js、React等）通过解析URL中的路径，确定要渲染的组件或页面内容。URL中的路径部分可以映射到前端应用程序的不同路由规则，从而决定加载哪个组件或页面。
+  3. 参数传递：URL中的查询参数可以用于传递数据给前端应用程序。前端应用程序可以通过解析URL中的查询参数来获取相应的数据，以便在页面中展示或执行相应的逻辑。
+
+  对于后端：
+
+  1. 路由和请求处理：后端服务器通过解析URL中的路径，确定要处理的请求和执行相应的操作。URL中的路径可以映射到后端服务器的不同路由规则，从而决定调用哪个处理函数或执行哪个API。
+  2. 参数获取：URL中的查询参数或路径参数可以用于向后端服务器传递数据。后端服务器可以通过解析URL中的参数来获取请求所需的数据，并进行相应的处理和响应。
+  3. RESTful API设计：URL在RESTful API设计中扮演重要角色。RESTful API使用URL来表示资源和操作，通过不同的URL路径和HTTP方法来执行对资源的操作，从而实现统一的API接口。
 
 # git分析
 
@@ -237,4 +269,8 @@ cgsms-patient相应的也需要在bootstrap.yml配置nacos地址，将服务注�
 
   - 前端的部署
 
-    前端也是部署在服务器上的，通过Nginx转发到对应的前端代码和静态文件中	
+    前端也是部署在服务器上的，通过Nginx转发到对应的前端代码和静态文件中；前端主要性能限制于流量大小，因为前端不需要做过多的cpu计算等，因此负载均衡选择与否不同
+    
+  - 文件系统怎么配置的，通过网关？
+  
+  - 
