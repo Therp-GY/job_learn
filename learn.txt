@@ -104,6 +104,8 @@ sy-cgsms：全专系统服务端代码，前后端分离，仅包含后端代码
   在Spring Boot中，`@Bean`是一个注解，用于将方法的返回值声明为一个Bean，并将其注册到Spring容器中。
 
   具体来说，`@Bean`注解通常用于@Configuration类中的方法上。当Spring Boot应用程序启动时，Spring容器会扫描带有`@Configuration`注解的类，并识别其中使用了`@Bean`注解的方法。然后，它会调用这些方法，并将方法的返回值注册为一个Bean，可以在应用程序中进行依赖注入或其他操作。
+  
+- 
 
 ## Maven
 
@@ -149,6 +151,28 @@ jar包：
 在MyServlet的doGet()或doPost()方法中，开发者可以编写相应的Java代码来处理请求，并生成一个HTTP响应。例如，可以从请求中获取参数、执行一些业务逻辑，然后将结果以HTML格式发送回客户端。
 Servlet容器会负责将生成的HTTP响应返回给客户端，这个过程中包括处理HTTP头部信息和消息体，并确保响应能够正确地传递给客户端。客户端（通常是Web浏览器）收到响应后，会解析响应并显示在用户界面上。
 通过这种方式，Servlet容器充当了一个中间层，接收和处理HTTP请求，然后将处理结果发送回客户端。这使得开发者可以专注于业务逻辑的实现，而不需要关注与底层HTTP通信的细节。这也是为什么Java程序本身不能直接处理HTTP请求，而需要依赖Servlet容器的原因。
+
+## Mybatis-plus
+
+在不同层次
+
+- 对dao类（Mapper）
+
+  ```java
+  public interface PatientMapper extends BaseMapper<Patient>{...}
+  ```
+
+  `BaseMapper`接口定义了一组通用的数据库操作方法，包括常用的CRUD（增删改查）操作，无需开发人员手动编写SQL语句即可实现对数据库表的操作；
+
+  即我们在service中可以直接调用mapper.insert、mapper.updateById等，而不需要在Mapper中定义
+
+- 对service类（service）
+
+  ```java
+  public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> implements PatientService {...}
+  ```
+
+  `ServiceImpl`提供了大量的通用方法，包括对数据库表进行增删改查等操作；例如调用this.lambdaQuery()查询、或者调用别的服务是service.lambdaQuery()进行查询（用于service间互相调用）
 
 # 微服务架构
 
@@ -201,7 +225,33 @@ cgsms-patient相应的也需要在bootstrap.yml配置nacos地址，将服务注�
 
   爲什麽我们自动生成出的前端代码只有一个vue和一个js，因为在数据库中我们保存的component属性指明了前端模板文件的路径和path属性对应的url路径，因此输入url就能得到对应的模板文件；
 
-  而实现页面跳转时，我们新增的页面也需要有对应的url和模板文件，不然访问不到，要么在我们的sys_menu中有，要么在我们的router/index.js中注册
+  而实现页面跳转时，我们新增的页面也需要有对应的url和模板文件，不然访问不到，要么在我们的sys_menu中有，要么在我们的router/index.js中注册；
+  
+- 前端一些知识
+
+  vue使用
+
+  实现跳转，返回，下拉框的选定，跳转以后传来的id怎么办？
+
+  一个页面增加按钮以及其函数，函数调用openPage跳转页面，跳转路由在router/index中定义；
+
+  返回时在页面增加按钮并调用close函数，close函数中调用closeOpenPage关闭当前页面并跳回到上一个页面；
+
+  - 整体
+
+    data()定义属性，该属性可变，页面内各种部件调用这些属性从而动态显示；
+
+    method定义各种函数，函数可能调用js中请求函数向后端请求数据，请求数据格式分三种，写到url中或者写到http body中，js中不同数据对应params、data；
+
+    页面跳转也是把请求写在url或者通过query传递，(query其实也是会被转化为url里)；
+
+    浏览器也可以断点调试，或者console.print控制台打印；
+
+    子组件调用父组件（页面中调用fileupload），可以通过ref来调用，并访问子组件内部方法和属性
+  
+    
+  
+  
 
 ## Feign
 
@@ -297,6 +347,54 @@ Feign客户端通过在接口上添加注解的方式定义了对远程服务的
 
     返回时在页面增加按钮并调用close函数，close函数中调用closeOpenPage关闭当前页面并跳回到上一个页面；
 
+    - 整体
+
+      data()定义属性，该属性可变，页面内各种部件调用这些属性从而动态显示；
     
+      method定义各种函数，函数可能调用js中请求函数向后端请求数据，请求数据格式分三种，写到url中或者写到http body中；
+    
+      页面跳转也是把请求写在url或者通过query传递；
+    
+      浏览器也可以断点调试，或者console.print控制台打印
+  
+- 7.21
+
+  - 整體工作
+
+    前后端分离，nacos分配服务，
+
+    ![1689931539354](C:\Users\wxh1405\AppData\Roaming\Typora\typora-user-images\1689931539354.png)
+
+- 7.25
+
+  - 长宁公众号对接全专
+
+    公众号（前端）  ----   微信登录（第三方系统） ---- 全传系统（服务端）
+
+    公众号微信登陆获取accesscode，公众号发送给服务端accesscode，服务端将的corpid和通过accesscode生成的sign去/login/getInfo（第三方系统:微信）请求用户信息得到用户**微信信息**，再将用户信息解密，并往patient表中检测是否存在该用户，存在的话往自己建的第三方表中加患者id就行，不存在的话需要向第三方表中插入用户信息和空id值，返回未查询到该用户
+
+    sign:对accesscode做的签名，用于发送到第三方系统（微信）后验证没有被篡改，才能返回用户信息
+
+    注意：corid写在nacos配置端底部，例如 form:....  ； 长宁地址也写在nacos中，然后spring新建配置类从nacos中自动注入地址
+
+    注意：在全专数据库中新增表来记录这些信息， 如下信息仍然相同
+
+    注意：
+
+    - 第三方登录关联表
+
+      
+
+        `delete_flag` tinyint(1) NOT NULL COMMENT '逻辑删除（0：未删除；1：已删除）',
+        `create_time` datetime NOT NULL COMMENT '创建时间',
+        `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+        `create_user_id` bigint(20) NOT NULL COMMENT '创建人id',
+        `update_user_id` bigint(20) DEFAULT NULL COMMENT '更新人id',
+        `create_user_name` varchar(255) NOT NULL COMMENT '创建人名称',
+        `update_user_name` varchar(255) DEFAULT NULL COMMENT '更新人名称',
+
+  - 疑问
+
+    爲什麽第三方要先给我们accesscode，不能直接给我们用户加密的信息；
 
     
