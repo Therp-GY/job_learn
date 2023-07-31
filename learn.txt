@@ -247,10 +247,13 @@ cgsms-patient相应的也需要在bootstrap.yml配置nacos地址，将服务注�
 
     浏览器也可以断点调试，或者console.print控制台打印；
 
-    子组件调用父组件（页面中调用fileupload），可以通过ref来调用，并访问子组件内部方法和属性
+    子组件调用父组件（页面中调用fileupload），可以通过ref来调用，并访问子组件内部方法和属性；
   
+    父子组件传参，可以通过prop属性，并使用watch监视prop属性变化来更新
     
+  - 文件上传
   
+    父子组件交互只在1打开某行修改界面、2提交信息时，1父（页面）向子（文件上传组件）发送该行已上传文件列表，后续都是文件组件自己维护自己的文件列表；2提交信息时子组件再将维护的文件列表发送给父组件，父提交表单即可
   
 
 ## Feign
@@ -383,18 +386,41 @@ Feign客户端通过在接口上添加注解的方式定义了对远程服务的
 
     - 第三方登录关联表
 
-      
+      `user_id`
 
+        `openid`
+        
         `delete_flag` tinyint(1) NOT NULL COMMENT '逻辑删除（0：未删除；1：已删除）',
         `create_time` datetime NOT NULL COMMENT '创建时间',
         `update_time` datetime DEFAULT NULL COMMENT '更新时间',
         `create_user_id` bigint(20) NOT NULL COMMENT '创建人id',
         `update_user_id` bigint(20) DEFAULT NULL COMMENT '更新人id',
-        `create_user_name` varchar(255) NOT NULL COMMENT '创建人名称',
+      `create_user_name` varchar(255) NOT NULL COMMENT '创建人名称',
         `update_user_name` varchar(255) DEFAULT NULL COMMENT '更新人名称',
+      
+        可以将user_id和openid建立联合索引，这样还可以避免回表，在用户已注册情况下再登录，通过检索openid得到用户id，并得到用户信息
 
   - 疑问
+  
+    ？爲什麽第三方要先给我们accesscode，不能直接给我们用户加密的信息；
+  
+    ？增加效率则疯狂增加第三方表
+  
+- 2023/7/28
 
-    爲什麽第三方要先给我们accesscode，不能直接给我们用户加密的信息；
+  - 文件上传回调问题
 
-    
+    filelist绑定父组件的attachName，filelist又传入文件列表组件中，其中el-link对应filelist中url属性，从而点击跳转；filelist绑定父组件的方法：在watch handler中，
+
+    父组件：拿每一行row的信息，得到url和name
+
+    子组件：通过点击获得url和name
+
+    新增的时候，先子组件获得url和name，再传给父组件
+
+    修改时，父组件先根据row拿到url和name，传给子组件，子组件再做更改，最后传给父组件
+
+- 2023/7/31
+
+  - 爲什麽看基础知识这么慢
+  - 看视频低效
