@@ -58,7 +58,7 @@ sy-cgsms：全专系统服务端代码，前后端分离，仅包含后端代码
 
 - pojo类
 
-  VO类：通常用于在数据访问层（如数据库访问层）和业务逻辑层之间传递数据
+  VO/DTO类：通常用于在数据访问层（如数据库访问层）和业务逻辑层之间传递数据
 
   1. VO类通常用于封装业务逻辑层和表示层（UI层）之间的数据传递，而DTO类主要用于封装数据传输层和业务逻辑层之间的数据传递。
   2. VO类的字段通常是业务相关的，直接反映了业务的概念，而DTO类的字段通常是与数据库表或外部服务的数据交互相关的，它们可能并不直接反映业务概念。
@@ -79,7 +79,7 @@ sy-cgsms：全专系统服务端代码，前后端分离，仅包含后端代码
   
   因为前端发送到后端的请求（例如查询请求）并不一定包含entity中所有熟悉，因此转成的对象可能与dao中的对象不同，因此我们需要有VO类面向我们的UI界面；
   
-  相同的，我们的controller或server中也不需要完整的dao中的entity对象，则中间的DTO类就来作为这个类
+  相同的，我们的controller或server中也不需要完整的dao中的entity对象，则中间的DTO类就来作为这个类当使用DTO（Data Transfer Object）类时，主要目的是在不同层之间传输数据，通常用于封装多个实体类的数据，或者用于将数据库查询结果封装成一个简化的数据对象，以便传输。我们在服务层中获取到的信息都封装在了对应的DTO对象中，然后可以将它们传递给控制器层或其他服务层，从而实现不同层之间的数据传输。
 
 ## spring boot
 
@@ -105,7 +105,10 @@ sy-cgsms：全专系统服务端代码，前后端分离，仅包含后端代码
 
   具体来说，`@Bean`注解通常用于@Configuration类中的方法上。当Spring Boot应用程序启动时，Spring容器会扫描带有`@Configuration`注解的类，并识别其中使用了`@Bean`注解的方法。然后，它会调用这些方法，并将方法的返回值注册为一个Bean，可以在应用程序中进行依赖注入或其他操作。
   
-- 
+- @Param
+
+  为SQL语句中参数赋值而服务的。@Param的作用就是给参数命名，比如在mapper.java里面某方法A（int id），当添加注解后A（@Param("userId") int id），也就是说外部.mapperxml想要取出传入的id值，只需要取它的参数名userId就可以了。将参数值传如SQL语句中，通过#{userId}进行取值给SQL的参数赋值。
+
 
 ## Maven
 
@@ -141,6 +144,22 @@ jar包：
 - pom.xml
 
   描述项目结构、依赖关系、构建过程中需要执行的任务；和maven配合，pom中定义所有依赖，maven从仓库中下载
+  
+  在一个Maven项目中，根目录下的pom.xml是整个项目的主要配置文件，它描述了项目的基本信息、依赖关系、构建配置等。而每个包下的pom.xml是子模块（Module）的配置文件，用于描述子模块的信息，同时继承了父项目（根目录）的配置信息。
+  
+  根目录下的pom.xml：
+  
+  1. 主要配置：根目录下的pom.xml是整个项目的主要配置文件。它包含了项目的基本信息，如项目的名称、版本号、描述等。
+  2. 依赖管理：根目录的pom.xml中可以定义项目中所有模块（子项目）的依赖关系，这样所有的子模块都可以共享相同的依赖版本，从而实现依赖的统一管理。
+  3. 插件管理：根目录的pom.xml也可以定义项目中使用的构建插件，这些插件可以在所有子模块中使用，实现构建过程的统一管理。
+  4. 子模块的引入：根目录的pom.xml中可以引入各个子模块，使得它们成为整个项目的一部分。
+  
+  每个包下的pom.xml（子模块的pom.xml）：
+  
+  1. 继承：子模块的pom.xml会继承根目录下的pom.xml中定义的依赖、插件和其他配置信息，从而使得子模块可以共享父项目的配置信息，减少重复配置。
+  2. 子模块的独立性：每个子模块的pom.xml可以配置该模块特有的依赖、插件和配置信息，使得子模块具有一定的独立性，可以单独构建、测试和部署。
+  
+  通过将项目拆分为多个子模块，每个子模块负责一个特定的功能或模块，可以提高项目的可维护性和可扩展性。根目录的pom.xml则充当了整个项目的管理中心，用于集中管理和配置整个项目的构建过程。子模块的pom.xml继承了根目录的配置信息，同时可以覆盖和补充自己特有的配置，实现了项目的模块化管理。
 
 ## Tomcat
 
@@ -152,9 +171,29 @@ jar包：
 Servlet容器会负责将生成的HTTP响应返回给客户端，这个过程中包括处理HTTP头部信息和消息体，并确保响应能够正确地传递给客户端。客户端（通常是Web浏览器）收到响应后，会解析响应并显示在用户界面上。
 通过这种方式，Servlet容器充当了一个中间层，接收和处理HTTP请求，然后将处理结果发送回客户端。这使得开发者可以专注于业务逻辑的实现，而不需要关注与底层HTTP通信的细节。这也是为什么Java程序本身不能直接处理HTTP请求，而需要依赖Servlet容器的原因。
 
+## Jenkins
+
+发版工具，相当于自动从git上拉最新代码并运行部署，供测试段测试
+
 ## Mybatis-plus
 
-在不同层次
+**MyBatis（**mybatis：是一种Java持久化框架，用于简化数据库访问的开发。它提供了一种将对象与数据库之间进行映射的方式，并通过配置文件和注解来执行数据库操作。）或其他ORM框架所使用的映射文件。这些映射文件用于描述对象与数据库表之间的映射关系。具体包含如下：
+
+1. SQL语句
+
+   映射文件中可以包含各种SQL语句，如查询、插入、更新、删除等。这些SQL语句用于操作数据库表，通过对象与数据库表的映射关系，实现数据的持久化操作。
+
+2. 映射关系定义
+
+   映射文件中还包含了对象与数据库表之间的映射关系定义。这些定义指定了对象属性与数据库表字段之间的对应关系，以及对象关联关系的处理方式。这样，持久化框架就能根据映射文件中的定义，将对象数据与数据库表进行转换和映射。
+
+3. 参数传递
+
+   映射文件中可以定义方法的参数传递方式。这些定义包括传递简单参数、传递对象参数、传递Map参数等，用于在SQL语句中获取和使用方法参数。  
+
+新增guide表，mysql表名guide，entity/Guide.java为表建类，dao/GuideMapper.java针对表guide的数据库操作Mapper接口，GuideMapper.xml创建mybatis映射（相当于Mapper的.java实现），然后编写GuideService.java和GuideServiceImpl.java依赖于Mapper完成业务逻辑，然后编写GuideController.java完成url相应（即servlet组件的http请求关系写在了controller中）
+
+Mybatis-plus在不同层次提供的接口：
 
 - 对dao类（Mapper）
 
@@ -389,7 +428,7 @@ Feign客户端通过在接口上添加注解的方式定义了对远程服务的
       `user_id`
 
         `openid`
-        
+      
         `delete_flag` tinyint(1) NOT NULL COMMENT '逻辑删除（0：未删除；1：已删除）',
         `create_time` datetime NOT NULL COMMENT '创建时间',
         `update_time` datetime DEFAULT NULL COMMENT '更新时间',
@@ -424,3 +463,51 @@ Feign客户端通过在接口上添加注解的方式定义了对远程服务的
 
   - 爲什麽看基础知识这么慢
   - 看视频低效
+  - debug明确范围，每次都缩小范围
+  
+- 2023/8/01
+
+  - 快速熟悉业务
+
+    patient_... 病人相关信息  （第三方关联表，解决多对多，以及避免信息冗余等等）
+
+    patient_follow_info 病人随访信息表
+
+- 2023/8/02
+
+  - 后端配置端-病种管理
+
+    病种管理列表增删改查：science_research_disease表
+
+    release_1.0.0分支下新开分支进行开发
+
+    包结构：除service、pojo、dao外business包涉及多表操作的service写在这个表里先建立基本结构，然后仿照之前全专的写法写，然后用postman进行测试
+
+  - 几个待解决的问题
+
+    1. 分页 
+
+       ```java
+       public PageResInfo<Guide> getGuide(PageReqQuery pageReqQuery) {
+               Page<Guide> guidePage = this.lambdaQuery().eq(Guide::getDeleteFlag, 0).page(PageUtils.toReq(pageReqQuery));
+               return PageUtils.toRes(guidePage);
+           }
+       ```
+
+       
+
+    2. DTO VO的编写：VO只需要科室id、病种名称、状态，暂时不需要DTO因为不需要多个服务层间传输
+
+    3. 表中不存在科室名称，科室名称如何获得以及如何支持查询 ： dept_a表支持，该表写了科室id与科室名称的对应关系；那还是只要操作一张表即可，前端获取id和对应map（还是问一下吧），还是在后端完成关联查询吧，否则若dept_a表中某个科室被删除（delet_tag为0），而表scientific_research_disease返回了带被删除科室的id，那就多出了无用的科室id
+
+       表scientific_research_disease的有dept_id、disease_name、status三个字段，表dept_a有dept_id、dept_name两个字段，我需要对查询表scientific_research_disease的每一条，根据dept_id关联查询表dept_a中对应的dept_name，代码写在service层；
+
+    4. 下拉框
+
+    5. 状态维护成枚举 建Enum，调用enum
+
+    6. 增删改查
+    
+  - 关于秋招
+  
+    每天反思今天实习内容可以转化为什么面试的内容，以及如何讲述
